@@ -2,6 +2,7 @@
 from datetime import datetime
 
 from django.conf import settings
+from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
@@ -18,19 +19,6 @@ STATUS_CHOICES = (
     (STATUS_DRAFT, "Draft"), 
     (STATUS_PUBLISHED, "Published"),
 )
-
-sites_field = None
-if USE_SITES:
-    from django.contrib.sites.models import Site
-    try:
-        # Will fail on syncdb since the table doesn't exist yet, which is fine.
-        sites = Site.objects.all()
-        args = {}
-        if len(sites) == 1:
-            args["default"] = (sites[0].id,)
-    except:
-        pass
-    sites_field = models.ManyToManyField(Site, **args)
 
 FIELD_CHOICES = (
     ("CharField", _("Single line text")),
@@ -73,7 +61,7 @@ class AbstractForm(models.Model):
     A user-built form.
     """
 
-    sites = sites_field
+    sites = models.ManyToManyField(Site, verbose_name=_('Sites'), related_name='form')
     title = models.CharField(_("Title"), max_length=50)
     slug = models.SlugField(editable=False, max_length=100, unique=True)
     intro = models.TextField(_("Intro"))
